@@ -60,3 +60,13 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(tag), tag.name)
+
+    # Test to see that the ingredirnt model exists and we can create and retrieve the model
+    def test_ingredient_str(self):
+        """Test the ingredient string representation"""
+        ingredient = models.Ingredient.objects.create(
+            user=sample_user(),
+            name=Cucumber
+        )
+
+        self.assertEqual(str(ingredient), ingredient.name)

@@ -1,13 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.urls import reverse
+from django.urls import reverse # for generating the url
 from django.test import TestCase
 
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from ...core.models import Tag
+from core.models import Tag
 
-from ..serializers import TagSerializer
+from serializers import TagSerializer
 
 
 # using a viewset, append the action make to the end of the url
@@ -44,13 +44,14 @@ class PrivateTagsApiTest(TestCase):
 
     def test_retrieve_tags(self):
         """Test retrieving tags"""
+        # sample tags
         Tag.objects.create(user=self.user, name='Vegan')
         Tag.objects.create(user=self.user, name='Dessert')
 
         res = self.client.get(TAGS_URL)  # http get to the url
         # make query to the model that we expected to get to the result
-        tags = Tag.objects.all().order_by('-name')
-        serializer = TagSerializer(tags, many=True)
+        tags = Tag.objects.all().order_by('-name') # (result returned in alphabetical/reversed order based on name)
+        serializer = TagSerializer(tags, many=True) # many=True serializes a list of object
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -67,7 +68,8 @@ class PrivateTagsApiTest(TestCase):
 
         res = self.client.get(TAGS_URL)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.data), 1)
+        self.assertEqual(len(res.data), 1)  # expects only 1 result as only one tag was assigned to the user
+        # the name of in tag in res.data should equal that of the tag.name assigned to user
         self.assertEqual(res.data[0]['name'], tag.name)
 
     def test_create_tags_successful(self):
@@ -75,12 +77,15 @@ class PrivateTagsApiTest(TestCase):
         payload = {'name': 'Test tag'}
         self.client.post(TAGS_URL, payload)
 
+        # verify that user exists
+        # filter all tags with the user that is the authenticated user and the name created in the test payload
         exists = Tag.objects.filter(
             user=self.user,
             name=payload['name']
         ).exists()
         self.assertTrue(exists)
 
+    # creating a tag with an invalid name
     def test_create_tag_invalid(self):
         """Test creating a new tag with invalid payload"""
         payload = {'name': ''}
