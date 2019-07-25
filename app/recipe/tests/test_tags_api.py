@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 
 from core.models import Tag
 
-from serializers import TagSerializer
+from recipe.serializers import TagSerializer
 
 
 # using a viewset, append the action make to the end of the url
