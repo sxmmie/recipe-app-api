@@ -8,29 +8,26 @@ from core.models import Tag, Ingredient
 from recipe import serializers
 
 
-class TagViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
-    """Manage tags in the database"""
+class BaseRecipeAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
+    """Base viewset for user owned recipe sttributes"""
     authentication_classes = (TokenAuthentication,) # token authentication is used
     permission_classes = (IsAuthenticated,) # user is required to be authenticated
-    queryset = Tag.objects.all()    # queryset to return
-    serializer_classes = serializers.TagSerializer
 
-    def query_set(self):
+    def get_queryset(self):
         """Return objects for the current authenticated user only"""
         return self.queryset.filter(user=self.request.user).order_by('-name')
 
-    def perform_create(self, serializer):
+    def perform_create(self):
         """Create a new tag"""
         serializer.save(user=self.request.user)
 
-
-class IngredientViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
-    """Manage Ingrediens in the database"""
-    authentication_classes = (TokenAuthentication,) # token authentication is used
-    permission_classes = (IsAuthenticated,) # user is required to be authenticated
-    queryset = Ingredient.objects.all()    # queryset to return
+class TagViewSet(BaseRecipeAttrViewSet):
+    """Manage tags in the database"""
+    queryset = Tag.objects.all()    # queryset to return
     serializer_classes = serializers.TagSerializer
 
-    def query_set(self):
-        """Return objects for the current authenticated user only"""
-        return self.queryset.filter(user=self.request.user).order_by('-name')
+
+class IngredientViewSet(BaseRecipeAttrViewSet):
+    """Manage Ingrediens in the database"""
+    queryset = Ingredient.objects.all()    # queryset to return
+    serializer_classes = serializers.TagSerializer
