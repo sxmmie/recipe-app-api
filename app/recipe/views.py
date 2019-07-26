@@ -4,14 +4,17 @@ from rest_framework.permissions import IsAuthenticated
 
 # from core.models import Tag
 # from ..recipe import serializers
-from core.models import Tag, Ingredient
+from core.models import Tag, Ingredient, Recipe
+
 from recipe import serializers
 
 
 class BaseRecipeAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
     """Base viewset for user owned recipe sttributes"""
-    authentication_classes = (TokenAuthentication,) # token authentication is used
-    permission_classes = (IsAuthenticated,) # user is required to be authenticated
+    authentication_classes = (
+        TokenAuthentication,)  # token authentication is used
+    # user is required to be authenticated
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         """Return objects for the current authenticated user only"""
@@ -21,13 +24,33 @@ class BaseRecipeAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixi
         """Create a new tag"""
         serializer.save(user=self.request.user)
 
+
 class TagViewSet(BaseRecipeAttrViewSet):
     """Manage tags in the database"""
     queryset = Tag.objects.all()    # queryset to return
-    serializer_classes = serializers.TagSerializer
+    serializer_class = serializers.TagSerializer
 
 
 class IngredientViewSet(BaseRecipeAttrViewSet):
-    """Manage Ingrediens in the database"""
+    """Manage Ingredients in the database"""
     queryset = Ingredient.objects.all()    # queryset to return
-    serializer_classes = serializers.TagSerializer
+    serializer_class = serializers.TagSerializer
+
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    """Manage recipes in the database"""
+    serializer_class = serializers.RecipeSerializer
+    queryset = Recipe.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        """Retrieve the recipes for the authenticated user"""
+        return self.queryset.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        """Return appropriate serializer class"""
+        if self.action == 'retrieve':
+            return serializers.RecipeDetailSerializer
+
+        return self.serializer_class

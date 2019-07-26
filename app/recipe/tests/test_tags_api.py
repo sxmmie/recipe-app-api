@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.urls import reverse # for generating the url
+from django.urls import reverse  # for generating the url
 from django.test import TestCase
 
 from rest_framework import status
@@ -39,7 +39,7 @@ class PrivateTagsApiTest(TestCase):
             'passwordtest'
         )
 
-        self.client = APIClient
+        self.client = APIClient()
         self.client.force_authenticate(self.user)
 
     def test_retrieve_tags(self):
@@ -49,9 +49,12 @@ class PrivateTagsApiTest(TestCase):
         Tag.objects.create(user=self.user, name='Dessert')
 
         res = self.client.get(TAGS_URL)  # http get to the url
+
         # make query to the model that we expected to get to the result
-        tags = Tag.objects.all().order_by('-name') # (result returned in alphabetical/reversed order based on name)
-        serializer = TagSerializer(tags, many=True) # many=True serializes a list of object
+        # (result returned in alphabetical/reversed order based on name)
+        tags = Tag.objects.all().order_by('-name')
+        # many=True serializes a list of object
+        serializer = TagSerializer(tags, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -67,14 +70,16 @@ class PrivateTagsApiTest(TestCase):
         tag = Tag.objects.create(user=self.user, name='Comfort Food')
 
         res = self.client.get(TAGS_URL)
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.data), 1)  # expects only 1 result as only one tag was assigned to the user
+        # expects only 1 result as only one tag was assigned to the user
+        self.assertEqual(len(res.data), 1)
         # the name of in tag in res.data should equal that of the tag.name assigned to user
         self.assertEqual(res.data[0]['name'], tag.name)
 
-    def test_create_tags_successful(self):
+    def test_create_tag_successful(self):
         """Test creating a new tag"""
-        payload = {'name': 'Test tag'}
+        payload = {'name': 'Simple'}
         self.client.post(TAGS_URL, payload)
 
         # verify that user exists

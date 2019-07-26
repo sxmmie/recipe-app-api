@@ -5,12 +5,28 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import recipe
-from recipe.serializers import RecipeSerializer
+from core.models import Recipe, Tag, Ingredient
 
-RECIPE_URL = reverse('recipe:recipe:list')
+from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
+
+RECIPE_URL = reverse('recipe:recipe-list')
+
+
+# helper function to help create the recipe detail url endpoint
+def recipe_detail(self):
+    """Return recipe detail URL"""
+    return reverse('recipe:recipe-detail', args=[recipe_id])
+
 
 # helper function, easily create test sample recipes
+def sample_tag(user, name='Main course'):
+    """Create and return a simple tag"""
+    return Tag.objects.create(user=user, name=name)
+
+
+def sample_ingredient(user, name='cinnamon'):
+    """Create and return a simple ingredient"""
+    return Ingredient.objects.create(user=user, name=name)
 
 
 def sample_recipe(user, **params):
@@ -24,7 +40,7 @@ def sample_recipe(user, **params):
     # update() helps overwrite the values the dict keys, or create the keys if they don't exists
     defaults.update(params)
 
-    Recipe.objects.create(user=user, **defaults)
+    return Recipe.objects.create(user=user, **defaults)
 
 
 class PublicRecipeApiTests(TestCase):
@@ -77,4 +93,17 @@ class PrivateRecipeApiTests(TestCase):
         serializer = RecipeSerializer(recipes, Many=True)
         self.assertEqual(res.status_code, status.HTTP_200_Ok)
         self.assertEqual(len(res.data), 1)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_view_recipe_detail(self):
+        """Test viewing a recipe detail"""
+        recipe = sample_recipe(user=self.user)
+        recipe.tags.add(sample_tag(user=self.user))
+        recipe.ingredients.add(sample_ingredients(user=self.user))
+
+        url = detail_url(recipe.id)
+        res = self.client.get(url)
+
+        serializer = RecipeDetailSerializer(recipe)
+
         self.assertEqual(res.data, serializer.data)

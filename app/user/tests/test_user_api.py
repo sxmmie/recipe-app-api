@@ -127,7 +127,7 @@ class PrivateUserTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         # test the user object returned is what is expected
-        self.assertEqual({
+        self.assertEqual(res.data, {
             'email': self.user.email,
             'name': self.user.name
         })
