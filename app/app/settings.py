@@ -127,6 +127,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
+# 127.0.0.1/media/
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+# static files will be dumped after we build our app
+STATIC_ROOT = '/vol/web/static'
+# Tell django where to store all media files
+MEDIA_ROOT = '/vol/web/media'
 
 AUTH_USER_MODEL = 'core.User'

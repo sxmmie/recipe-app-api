@@ -63,7 +63,7 @@ class PrivateIngredientApiTest(TestCase):
 
         ingredient = Ingredient.objects.create(user=self.user, name='Tumeric')
 
-        res = self.client(INGREDIENT_URL)
+        res = self.client.get(INGREDIENT_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         # just one result for authenticated user

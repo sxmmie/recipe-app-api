@@ -1,3 +1,4 @@
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -29,7 +30,7 @@ class ModelTests(TestCase):
 
     def test_new_user_email_normalize(self):
         """Test the email for a new user is normalized"""
-        email = 'test@GMAIL.COM'
+        email = 'tsst@GMAIL.COM'
         user = get_user_model().objects.create_user(email, 'test123')
 
         self.assertEqual(user.email, email.lower())
@@ -82,3 +83,15 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(recipe), recipe.title)
+
+    # mock the uuid library that comes by default with python, change the value it returns
+    # Anytime the uuid4() is called (triggered from inside this function), we change the return value
+    @patch('uuid.uuid4')
+    def test_recipe_file_name_uuid(self, mock_uuid):
+        """Test that test is saved in the correct location"""
+        uuid = 'test uuid'
+        mock_uuid.return_value = uuid
+        file_path = models.recipe_image_file_path(None, myimage.jpg)
+
+        exp_path = f'upload/recipe/{uuid}.jpg'
+        self.assertEqual(file_path, exp_path)
