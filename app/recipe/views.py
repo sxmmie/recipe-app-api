@@ -15,14 +15,21 @@ from recipe import serializers
 
 class BaseRecipeAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
     """Base viewset for user owned recipe sttributes"""
-    authentication_classes = (
-        TokenAuthentication,)  # token authentication is used
+    # token authentication is used
+    authentication_classes = (TokenAuthentication,)
     # user is required to be authenticated
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         """Return objects for the current authenticated user only"""
-        return self.queryset.filter(user=self.request.user).order_by('-name')
+        assigned_only = bool(
+            int(self.request.query_params.get('assigned_only', 0))
+        )
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(recipe_isnull=False)
+
+        return queryset.filter(user=self.request.user).order_by('-name').distinct()
 
     def perform_create(self):
         """Create a new tag"""
@@ -48,9 +55,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    def _params_to_ints(self, qs):
+        """Convert a list string ids to a list of integers"""
+        return [int(str_id) for str_id in qs.split(',')]
+
     def get_queryset(self):
         """Retrieve the recipes for the authenticated user"""
-        return self.queryset.filter(user=self.request.user)
+        # if tags keys is not set in query params, set tags to None
+        tags = self.request.query_params.get('tags')
+        ingredients = self.request.query_params.get('ingredients')
+        queryset = self.queryset
+        if tags:
+            tags_ids = _params_to_ints(tags)
+            queryset = queryset.filter(tags__id__in=tags_ids)
+        if ingredients:
+            ingredients_ids = _params_to_ints(ingredients)
+            queryset = queryset.filter(ingredients__id__in=ingredients_ids)
+
+        # assigned_only = bool(
+        #     int(self.request.query_params.get('assigned_only'))
+        # )
+        return queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
         """Return appropriate serializer class"""
