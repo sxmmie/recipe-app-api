@@ -68,7 +68,7 @@ class PublicRecipeApiTests(TestCase):
 
 
 class PrivateRecipeApiTests(TestCase):
-    """Test unauthentictaed API access"""
+    """Test unauthenticated API access"""
 
     def setUp(self):
         self.client = APIClient()
