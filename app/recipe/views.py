@@ -14,7 +14,7 @@ from recipe import serializers
 
 
 class BaseRecipeAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
-    """Base viewset for user owned recipe sttributes"""
+    """Base viewset for user owned recipe attributes"""
     # token authentication is used
     authentication_classes = (TokenAuthentication,)
     # user is required to be authenticated
